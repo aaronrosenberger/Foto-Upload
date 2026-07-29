@@ -28,7 +28,45 @@
 </head>
 <body class="min-h-screen text-stone-800">
   <main class="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-4 py-10 sm:px-6 sm:py-16">
-    <div class="text-center">
+    <header class="text-center">
+      <svg width="72" height="72" viewBox="0 0 100 100" class="mx-auto" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <path id="petal-leaf" d="M50 50 C 43 42, 34 26, 24 4 C 44 10, 56 26, 60 40 C 60 44, 55 48, 50 50 Z"/>
+          <path id="petal-outer" d="M50 50 C 27 47, 15 30, 22 12 C 34 4, 48 4, 50 16 C 52 4, 66 4, 78 12 C 85 30, 73 47, 50 50 Z"/>
+          <path id="petal-inner" d="M50 50 C 36 47, 29 36, 33 24 C 41 18, 48 20, 50 28 C 52 20, 59 18, 67 24 C 71 36, 64 47, 50 50 Z"/>
+        </defs>
+        <g fill="#697f5b">
+          <use href="#petal-leaf" transform="rotate(36 50 50)"/>
+          <use href="#petal-leaf" transform="rotate(180 50 50) scale(0.9)"/>
+          <use href="#petal-leaf" transform="rotate(252 50 50) scale(0.85)"/>
+        </g>
+        <g fill="#fbf8f2" stroke="#8a7c5c" stroke-width="1">
+          <use href="#petal-outer" transform="rotate(0 50 50)"/>
+          <use href="#petal-outer" transform="rotate(72 50 50)"/>
+          <use href="#petal-outer" transform="rotate(144 50 50)"/>
+          <use href="#petal-outer" transform="rotate(216 50 50)"/>
+          <use href="#petal-outer" transform="rotate(288 50 50)"/>
+        </g>
+        <g fill="#e3d383" stroke="#c9b968" stroke-width="0.5">
+          <use href="#petal-inner" transform="rotate(36 50 50)"/>
+          <use href="#petal-inner" transform="rotate(108 50 50)"/>
+          <use href="#petal-inner" transform="rotate(180 50 50)"/>
+          <use href="#petal-inner" transform="rotate(252 50 50)"/>
+          <use href="#petal-inner" transform="rotate(324 50 50)"/>
+        </g>
+        <circle cx="50" cy="50" r="7" fill="#e8c94a"/>
+        <g fill="#c9a227">
+          <circle cx="47" cy="47" r="0.8"/>
+          <circle cx="53" cy="47" r="0.8"/>
+          <circle cx="47" cy="53" r="0.8"/>
+          <circle cx="53" cy="53" r="0.8"/>
+          <circle cx="50" cy="50" r="0.8"/>
+        </g>
+      </svg>
+      <p class="mt-2 font-serif text-xl text-sage-700 sm:text-2xl">Lena <span class="text-sage-400">&amp;</span> Aaron</p>
+    </header>
+
+    <div class="mt-8 text-center">
       <h1 class="font-serif text-2xl text-sage-700 sm:text-3xl">Teilt eure Fotos mit uns</h1>
       <p class="mx-auto mt-2 max-w-md text-sm text-stone-600 sm:text-base">
         Ladet eure Bilder von der Feier hoch – sie landen direkt in unserem
@@ -64,6 +102,74 @@
         <span class="h-px w-10 bg-sage-300"></span>
       </div>
     </div>
+
+    <svg viewBox="0 0 700 90" preserveAspectRatio="none" class="-mx-4 mt-6 h-16 w-[calc(100%+2rem)] sm:-mx-6 sm:h-20 sm:w-[calc(100%+3rem)]" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M0 70 Q 50 55, 100 65 T 200 60 T 300 68 T 400 58 T 500 66 T 600 60 T 700 65 L700 90 L0 90 Z" fill="#c9d4c1"/>
+      <path d="M0 78 Q 60 68, 120 76 T 250 72 T 380 78 T 500 70 T 620 76 T 700 74 L700 90 L0 90 Z" fill="#a6b89a"/>
+      <g stroke="#697f5b" stroke-width="2" stroke-linecap="round" fill="none">
+        <path d="M30 78 Q 26 62, 34 50"/>
+        <path d="M38 78 Q 42 64, 36 52"/>
+        <path d="M150 76 Q 146 60, 154 48"/>
+        <path d="M158 76 Q 162 62, 156 50"/>
+        <path d="M280 78 Q 276 62, 284 50"/>
+        <path d="M288 78 Q 292 64, 286 52"/>
+        <path d="M420 76 Q 416 60, 424 48"/>
+        <path d="M428 76 Q 432 62, 426 50"/>
+        <path d="M560 78 Q 556 62, 564 50"/>
+        <path d="M568 78 Q 572 64, 566 52"/>
+        <path d="M650 76 Q 646 60, 654 48"/>
+      </g>
+      <g transform="translate(70 55)">
+        <g fill="#ffffff" stroke="#d8cdb8" stroke-width="0.5">
+          <circle cx="0" cy="-5" r="3.2"/>
+          <circle cx="4.7" cy="-1.5" r="3.2"/>
+          <circle cx="2.9" cy="4" r="3.2"/>
+          <circle cx="-2.9" cy="4" r="3.2"/>
+          <circle cx="-4.7" cy="-1.5" r="3.2"/>
+        </g>
+        <circle cx="0" cy="0" r="2.4" fill="#e8c94a"/>
+      </g>
+      <g transform="translate(210 50) scale(0.8)">
+        <g fill="#f3d1c8">
+          <circle cx="0" cy="-5" r="3.2"/>
+          <circle cx="4.7" cy="-1.5" r="3.2"/>
+          <circle cx="2.9" cy="4" r="3.2"/>
+          <circle cx="-2.9" cy="4" r="3.2"/>
+          <circle cx="-4.7" cy="-1.5" r="3.2"/>
+        </g>
+        <circle cx="0" cy="0" r="2.4" fill="#e8c94a"/>
+      </g>
+      <g transform="translate(350 58) scale(0.9)">
+        <g fill="#ffffff" stroke="#d8cdb8" stroke-width="0.5">
+          <circle cx="0" cy="-5" r="3.2"/>
+          <circle cx="4.7" cy="-1.5" r="3.2"/>
+          <circle cx="2.9" cy="4" r="3.2"/>
+          <circle cx="-2.9" cy="4" r="3.2"/>
+          <circle cx="-4.7" cy="-1.5" r="3.2"/>
+        </g>
+        <circle cx="0" cy="0" r="2.4" fill="#e8c94a"/>
+      </g>
+      <g transform="translate(490 52)">
+        <g fill="#e3d383">
+          <circle cx="0" cy="-5" r="3"/>
+          <circle cx="4.7" cy="-1.5" r="3"/>
+          <circle cx="2.9" cy="4" r="3"/>
+          <circle cx="-2.9" cy="4" r="3"/>
+          <circle cx="-4.7" cy="-1.5" r="3"/>
+        </g>
+        <circle cx="0" cy="0" r="2.2" fill="#a94f38"/>
+      </g>
+      <g transform="translate(610 56) scale(0.85)">
+        <g fill="#ffffff" stroke="#d8cdb8" stroke-width="0.5">
+          <circle cx="0" cy="-5" r="3.2"/>
+          <circle cx="4.7" cy="-1.5" r="3.2"/>
+          <circle cx="2.9" cy="4" r="3.2"/>
+          <circle cx="-2.9" cy="4" r="3.2"/>
+          <circle cx="-4.7" cy="-1.5" r="3.2"/>
+        </g>
+        <circle cx="0" cy="0" r="2.4" fill="#e8c94a"/>
+      </g>
+    </svg>
   </main>
 
   <script>
