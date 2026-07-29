@@ -95,8 +95,11 @@ gehostete Landingpage.
 1. Im Browser wählt der Gast ein oder mehrere Bilder aus (Drag & Drop oder
    Dateiauswahl); alle gängigen Foto-Formate, max. 25 MB pro Bild.
 2. Beim Klick auf "Hochladen" wird jede Datei client-seitig als Base64
-   kodiert und nacheinander per `google.script.run` an die Server-Funktion
-   `uploadFile()` in `Code.gs` übergeben.
+   kodiert und per `google.script.run` an die Server-Funktion `uploadFile()`
+   in `Code.gs` übergeben. Bis zu 3 Dateien laufen dabei gleichzeitig
+   (`UPLOAD_CONCURRENCY` in `Index.html`); schlägt ein Upload fehl, wird er
+   automatisch bis zu zweimal wiederholt (`UPLOAD_MAX_RETRIES`), bevor er als
+   fehlgeschlagen markiert wird.
 3. `uploadFile()` validiert Typ und Größe, dekodiert die Datei und legt sie
    über `DriveApp.getFolderById(...).createFile(...)` im konfigurierten
    Ordner ab.
@@ -104,8 +107,9 @@ gehostete Landingpage.
 
 ## Hinweise zu Limits
 
-- Apps Script hat eine Ausführungszeit-Grenze von 6 Minuten pro Aufruf,
-  daher werden Dateien nacheinander (nicht parallel) hochgeladen.
+- Apps Script hat eine Ausführungszeit-Grenze von 6 Minuten pro Aufruf; die
+  Parallelität ist bewusst auf 3 gleichzeitige Uploads begrenzt, um innerhalb
+  der Kontingente für gleichzeitige Ausführungen zu bleiben.
 - Die Dateigröße ist auf 25 MB begrenzt (anpassbar in
   `MAX_FILE_SIZE_BYTES` in `Code.gs` und `MAX_FILE_SIZE_MB` in `Index.html`),
   um innerhalb der Apps-Script-Quotas zu bleiben. Abgelehnte Dateien (falscher

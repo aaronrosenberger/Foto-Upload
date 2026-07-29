@@ -173,7 +173,9 @@
       gif: 'image/gif',
       heic: 'image/heic', heif: 'image/heif'
     };
-    var UPLOAD_TIMEOUT_MS = 30000;
+    var UPLOAD_TIMEOUT_MS = 60000;
+    var UPLOAD_MAX_RETRIES = 2;
+    var UPLOAD_CONCURRENCY = 3;
 
     // Resolves the effective MIME type for a File, falling back to the file
     // extension when the browser didn't supply (or misreported) file.type.
@@ -328,6 +330,23 @@
       return withTimeout(call, UPLOAD_TIMEOUT_MS);
     }
 
+    function delay(ms) {
+      return new Promise(function (resolve) { setTimeout(resolve, ms); });
+    }
+
+    // Retries a failed/timed-out upload a couple of times before giving up -
+    // most upload failures on venue wifi/cellular are transient blips, not
+    // permanent errors.
+    function uploadOneWithRetry(file, attemptsLeft) {
+      if (attemptsLeft === undefined) attemptsLeft = UPLOAD_MAX_RETRIES;
+      return uploadOne(file).catch(function (err) {
+        if (attemptsLeft <= 0) throw err;
+        return delay(1000).then(function () {
+          return uploadOneWithRetry(file, attemptsLeft - 1);
+        });
+      });
+    }
+
     // Apps Script's google.script.run has no byte-level transfer progress -
     // this tracks how many of the selected photos have finished (success or
     // error) so far, which is the most accurate progress we can show.
@@ -345,33 +364,51 @@
       uploadBtn.textContent = 'Wird hochgeladen …';
       statusList.innerHTML = '';
 
-      var total = selectedFiles.length;
+      var files = selectedFiles.slice();
+      var total = files.length;
       var done = 0;
       progressWrap.classList.remove('hidden');
       updateProgress(0, total);
 
-      var remaining = [];
-
-      for (var i = 0; i < selectedFiles.length; i++) {
-        var file = selectedFiles[i];
+      // Pre-create one status row per file (in selection order) so rows stay
+      // in place no matter which upload finishes first when running in
+      // parallel below.
+      var rows = files.map(function (file) {
         var li = document.createElement('li');
         li.className = 'text-stone-500';
         li.textContent = file.name + ' wird hochgeladen …';
         statusList.appendChild(li);
+        return li;
+      });
 
-        try {
-          await uploadOne(file);
-          li.className = 'text-sage-600';
-          li.textContent = '✓ ' + file.name + ' erfolgreich hochgeladen';
-        } catch (err) {
-          li.className = 'text-red-600';
-          li.textContent = '✗ ' + file.name + ': ' + (err && err.message ? err.message : 'Fehler beim Hochladen');
-          remaining.push(file);
+      var remaining = [];
+      var nextIndex = 0;
+
+      async function worker() {
+        while (nextIndex < files.length) {
+          var i = nextIndex++;
+          var file = files[i];
+          var li = rows[i];
+
+          try {
+            await uploadOneWithRetry(file);
+            li.className = 'text-sage-600';
+            li.textContent = '✓ ' + file.name + ' erfolgreich hochgeladen';
+          } catch (err) {
+            li.className = 'text-red-600';
+            li.textContent = '✗ ' + file.name + ': ' + (err && err.message ? err.message : 'Fehler beim Hochladen');
+            remaining.push(file);
+          }
+
+          done++;
+          updateProgress(done, total);
         }
-
-        done++;
-        updateProgress(done, total);
       }
+
+      var workerCount = Math.min(UPLOAD_CONCURRENCY, files.length);
+      var workers = [];
+      for (var w = 0; w < workerCount; w++) workers.push(worker());
+      await Promise.all(workers);
 
       progressWrap.classList.add('hidden');
       selectedFiles = remaining;
