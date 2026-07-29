@@ -312,10 +312,17 @@
 
     // Uploads the raw file bytes directly via XHR POST to this web app's own
     // URL (doPost in Code.gs) instead of base64-encoding through
-    // google.script.run - avoids the ~33% base64 size overhead and gives us
-    // real byte-level upload progress via xhr.upload.onprogress, which
-    // google.script.run cannot provide at all.
-    function uploadOne(file, onProgress) {
+    // google.script.run - avoids the ~33% base64 size overhead.
+    //
+    // Note: this deliberately does NOT attach an xhr.upload.onprogress
+    // listener. Per the CORS spec, registering any listener on
+    // XMLHttpRequestUpload forces the browser to send a preflight OPTIONS
+    // request, and Apps Script web apps have no way to answer that (no
+    // doOptions hook) - every upload would fail with a generic network
+    // error. Real byte-level progress isn't available here as a result; the
+    // striped progress bar + per-row spinners are what make progress feel
+    // alive instead.
+    function uploadOne(file) {
       return new Promise(function (resolve, reject) {
         var mimeType = file.resolvedType || file.type;
         var url = SCRIPT_URL
@@ -325,17 +332,17 @@
         var xhr = new XMLHttpRequest();
         xhr.open('POST', url, true);
         xhr.timeout = UPLOAD_TIMEOUT_MS;
-
-        xhr.upload.onprogress = function (evt) {
-          if (onProgress && evt.lengthComputable) onProgress(evt.loaded);
-        };
+        // Also keeps this a CORS "simple request" (one less reason to need
+        // a preflight Apps Script can't answer) - the real image MIME type
+        // is passed separately via the mimeType query parameter above, so
+        // the raw bytes sent here don't depend on this header at all.
+        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
 
         xhr.onload = function () {
           var data = null;
           try { data = JSON.parse(xhr.responseText); } catch (parseErr) { /* fall through */ }
 
           if (xhr.status >= 200 && xhr.status < 300 && data && !data.error) {
-            if (onProgress) onProgress(file.size);
             resolve(data);
           } else {
             reject(new Error((data && data.error) || ('Serverfehler (HTTP ' + xhr.status + ')')));
@@ -355,15 +362,23 @@
     // Retries a failed/timed-out upload a couple of times before giving up -
     // most upload failures on venue wifi/cellular are transient blips, not
     // permanent errors.
-    function uploadOneWithRetry(file, onProgress, attemptsLeft) {
+    function uploadOneWithRetry(file, attemptsLeft) {
       if (attemptsLeft === undefined) attemptsLeft = UPLOAD_MAX_RETRIES;
-      return uploadOne(file, onProgress).catch(function (err) {
+      return uploadOne(file).catch(function (err) {
         if (attemptsLeft <= 0) throw err;
-        if (onProgress) onProgress(0);
         return delay(1000).then(function () {
-          return uploadOneWithRetry(file, onProgress, attemptsLeft - 1);
+          return uploadOneWithRetry(file, attemptsLeft - 1);
         });
       });
+    }
+
+    // Apps Script gives us no real byte-level transfer progress here - this
+    // tracks how many of the selected photos have finished (success or
+    // error) so far, which is the most accurate progress we can show.
+    function updateProgress(done, total) {
+      var percent = total > 0 ? Math.round((done / total) * 100) : 0;
+      progressBar.style.width = percent + '%';
+      progressLabel.textContent = done + ' von ' + total + ' hochgeladen (' + percent + ' %)';
     }
 
     async function uploadAll() {
@@ -375,19 +390,10 @@
       statusList.innerHTML = '';
 
       var files = selectedFiles.slice();
-      var totalBytes = files.reduce(function (sum, f) { return sum + f.size; }, 0);
-      var loadedBytes = files.map(function () { return 0; });
-
+      var total = files.length;
+      var done = 0;
       progressWrap.classList.remove('hidden');
-      progressBar.style.width = '0%';
-      progressLabel.textContent = '0 % hochgeladen';
-
-      function updateProgress() {
-        var loaded = loadedBytes.reduce(function (sum, n) { return sum + n; }, 0);
-        var percent = totalBytes > 0 ? Math.min(100, Math.round((loaded / totalBytes) * 100)) : 0;
-        progressBar.style.width = percent + '%';
-        progressLabel.textContent = percent + ' % hochgeladen';
-      }
+      updateProgress(0, total);
 
       // Pre-create one status row per file (in selection order) so rows stay
       // in place no matter which upload finishes first when running in
@@ -415,10 +421,7 @@
           var li = rows[i];
 
           try {
-            await uploadOneWithRetry(file, function (loaded) {
-              loadedBytes[i] = loaded;
-              updateProgress();
-            });
+            await uploadOneWithRetry(file);
             li.className = 'text-sage-600';
             li.textContent = '✓ ' + file.name + ' erfolgreich hochgeladen';
           } catch (err) {
@@ -426,6 +429,9 @@
             li.textContent = '✗ ' + file.name + ': ' + (err && err.message ? err.message : 'Fehler beim Hochladen');
             remaining.push(file);
           }
+
+          done++;
+          updateProgress(done, total);
         }
       }
 
