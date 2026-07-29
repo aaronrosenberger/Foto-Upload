@@ -7,7 +7,8 @@ var ALLOWED_MIME_TYPES = [
   'image/heic',
   'image/heif',
   'image/heic-sequence',
-  'image/heif-sequence'
+  'image/heif-sequence',
+  'image/x-adobe-dng'
 ];
 
 var MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB

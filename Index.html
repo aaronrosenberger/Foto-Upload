@@ -45,7 +45,7 @@
         <input id="fileInput" type="file"
           accept="image/*" multiple class="hidden">
         <p class="font-serif text-base text-sage-700 sm:text-lg">Antippen zum Auswählen</p>
-        <p class="mt-1 text-xs text-stone-500 sm:text-sm">Alle gängigen Foto-Formate (JPG, HEIC, PNG, WEBP, GIF …) · max. 25 MB pro Bild</p>
+        <p class="mt-1 text-xs text-stone-500 sm:text-sm">Alle gängigen Foto-Formate (JPG, HEIC, PNG, WEBP, GIF, DNG …) · max. 25 MB pro Bild</p>
       </div>
 
       <div id="previewGrid" class="mt-6 grid grid-cols-3 gap-2 sm:gap-3"></div>
@@ -143,17 +143,20 @@
     // older devices) formats guests are likely to share photos in.
     var ACCEPTED_TYPES = [
       'image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif',
-      'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence'
+      'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence',
+      'image/x-adobe-dng'
     ];
     // Fallback by file extension for browsers/devices that report an empty
     // or unrecognized MIME type (this happens with HEIC on some Android
-    // WebViews). Maps to the canonical type sent to the server.
+    // WebViews, and is common for DNG RAW photos which browsers often don't
+    // recognize at all). Maps to the canonical type sent to the server.
     var EXTENSION_MIME_MAP = {
       jpg: 'image/jpeg', jpeg: 'image/jpeg',
       png: 'image/png',
       webp: 'image/webp',
       gif: 'image/gif',
-      heic: 'image/heic', heif: 'image/heif'
+      heic: 'image/heic', heif: 'image/heif',
+      dng: 'image/x-adobe-dng'
     };
     var UPLOAD_TIMEOUT_MS = 60000;
     var UPLOAD_MAX_RETRIES = 2;
