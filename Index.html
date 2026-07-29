@@ -73,6 +73,14 @@
           class="hidden w-full touch-manipulation cursor-not-allowed rounded-full bg-stone-300 px-8 py-3.5 text-base font-medium text-white shadow-md transition-colors">
           Hochladen
         </button>
+
+        <div id="progressWrap" class="hidden w-full">
+          <div class="h-2 w-full overflow-hidden rounded-full bg-sage-100">
+            <div id="progressBar" class="h-full w-0 rounded-full bg-sage-500 transition-[width] duration-300"></div>
+          </div>
+          <p id="progressLabel" class="mt-1.5 text-center text-xs text-stone-500"></p>
+        </div>
+
         <ul id="statusList" class="w-full space-y-1 text-sm"></ul>
       </div>
     </div>
@@ -156,6 +164,9 @@
     var previewGrid = document.getElementById('previewGrid');
     var uploadBtn = document.getElementById('uploadBtn');
     var statusList = document.getElementById('statusList');
+    var progressWrap = document.getElementById('progressWrap');
+    var progressBar = document.getElementById('progressBar');
+    var progressLabel = document.getElementById('progressLabel');
 
     var selectedFiles = [];
     var isUploading = false;
@@ -288,6 +299,15 @@
       return withTimeout(call, UPLOAD_TIMEOUT_MS);
     }
 
+    // Apps Script's google.script.run has no byte-level transfer progress -
+    // this tracks how many of the selected photos have finished (success or
+    // error) so far, which is the most accurate progress we can show.
+    function updateProgress(done, total) {
+      var percent = total > 0 ? Math.round((done / total) * 100) : 0;
+      progressBar.style.width = percent + '%';
+      progressLabel.textContent = done + ' von ' + total + ' hochgeladen (' + percent + ' %)';
+    }
+
     async function uploadAll() {
       if (isUploading || selectedFiles.length === 0) return;
 
@@ -295,6 +315,11 @@
       setUploadButtonEnabled(false);
       uploadBtn.textContent = 'Wird hochgeladen …';
       statusList.innerHTML = '';
+
+      var total = selectedFiles.length;
+      var done = 0;
+      progressWrap.classList.remove('hidden');
+      updateProgress(0, total);
 
       var remaining = [];
 
@@ -314,8 +339,12 @@
           li.textContent = '✗ ' + file.name + ': ' + (err && err.message ? err.message : 'Fehler beim Hochladen');
           remaining.push(file);
         }
+
+        done++;
+        updateProgress(done, total);
       }
 
+      progressWrap.classList.add('hidden');
       selectedFiles = remaining;
       isUploading = false;
       renderPreviews();
