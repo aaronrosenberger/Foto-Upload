@@ -11,7 +11,7 @@ var MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 function doGet() {
   return HtmlService.createTemplateFromFile('Index')
     .evaluate()
-    .setTitle('Sarah & Jonas – Unsere Hochzeit')
+    .setTitle('Foto Upload')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
