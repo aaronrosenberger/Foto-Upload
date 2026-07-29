@@ -42,7 +42,7 @@
         <input id="fileInput" type="file"
           accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple class="hidden">
         <p class="font-serif text-base text-sage-700 sm:text-lg">Antippen zum Auswählen</p>
-        <p class="mt-1 text-xs text-stone-500 sm:text-sm">JPG, PNG, WEBP oder HEIC · max. 10 MB pro Bild</p>
+        <p class="mt-1 text-xs text-stone-500 sm:text-sm">JPG, PNG, WEBP oder HEIC · max. 20 MB pro Bild</p>
       </div>
 
       <div id="previewGrid" class="mt-6 grid grid-cols-3 gap-2 sm:gap-3"></div>
@@ -67,7 +67,7 @@
   </main>
 
   <script>
-    var MAX_FILE_SIZE_MB = 10;
+    var MAX_FILE_SIZE_MB = 20;
     var ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
     var UPLOAD_TIMEOUT_MS = 30000;
 
@@ -117,16 +117,31 @@
     });
     fileInput.addEventListener('change', function (e) { addFiles(e.target.files); });
 
+    function addStatusMessage(text, isError) {
+      var li = document.createElement('li');
+      li.className = isError ? 'text-red-600' : 'text-stone-500';
+      li.textContent = (isError ? '✗ ' : '') + text;
+      statusList.appendChild(li);
+    }
+
     function addFiles(fileList) {
       statusList.innerHTML = '';
       var existingKeys = {};
       selectedFiles.forEach(function (f) { existingKeys[f.name + '-' + f.size] = true; });
 
       Array.prototype.forEach.call(fileList, function (file) {
-        if (ACCEPTED_TYPES.indexOf(file.type) === -1) return;
-        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) return;
         var key = file.name + '-' + file.size;
         if (existingKeys[key]) return;
+
+        if (ACCEPTED_TYPES.indexOf(file.type) === -1) {
+          addStatusMessage(file.name + ': nicht unterstütztes Dateiformat.', true);
+          return;
+        }
+        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+          addStatusMessage(file.name + ': Datei ist größer als ' + MAX_FILE_SIZE_MB + ' MB.', true);
+          return;
+        }
+
         existingKeys[key] = true;
         selectedFiles.push(file);
       });
