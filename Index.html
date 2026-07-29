@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['Georgia', 'Cambria', 'Times New Roman', 'Times', 'serif']
+          },
+          colors: {
+            blush: {
+              50: '#fdf6f4', 100: '#faeae6', 200: '#f3d1c8', 300: '#e8b0a1',
+              400: '#d9866f', 500: '#c66549', 600: '#a94f38', 700: '#8a3e2c'
+            },
+            sage: {
+              50: '#f4f6f3', 100: '#e5eae1', 200: '#c9d4c1', 300: '#a6b89a',
+              400: '#849a75', 500: '#697f5b', 600: '#516347'
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background: linear-gradient(to bottom, #fdf6f4, #ffffff, #f4f6f3); }
+  </style>
+</head>
+<body class="min-h-screen text-stone-800">
+  <section class="flex min-h-[80vh] flex-col items-center justify-center px-6 py-24 text-center">
+    <p class="font-serif text-sm uppercase tracking-[0.3em] text-sage-600">Wir heiraten</p>
+    <h1 class="mt-4 font-serif text-5xl text-blush-700 sm:text-6xl">Sarah &amp; Jonas</h1>
+    <p class="mt-6 text-lg text-stone-600">14. September 2026 · Schloss Rosengarten</p>
+    <div class="mt-8 h-px w-24 bg-blush-300"></div>
+    <p class="mt-8 max-w-xl text-stone-600">
+      Wir freuen uns riesig, unseren großen Tag mit euch zu feiern. Damit keine
+      Erinnerung verloren geht, könnt ihr eure schönsten Schnappschüsse direkt
+      hier mit uns teilen.
+    </p>
+  </section>
+
+  <section class="border-t border-blush-100 bg-white/70 px-6 py-20">
+    <div class="mx-auto max-w-3xl text-center">
+      <h2 class="font-serif text-3xl text-blush-700">Teilt eure Fotos mit uns</h2>
+      <p class="mx-auto mt-3 max-w-lg text-stone-600">
+        Ladet eure Bilder von der Feier hoch – sie landen direkt in unserem
+        gemeinsamen Hochzeitsalbum.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-12 w-full max-w-2xl">
+      <div id="dropzone"
+        class="cursor-pointer rounded-2xl border-2 border-dashed border-blush-300 bg-white/60 p-10 text-center transition-colors hover:bg-white">
+        <input id="fileInput" type="file"
+          accept="image/jpeg,image/png,image/webp,image/heic,image/heif" multiple class="hidden">
+        <p class="font-serif text-lg text-blush-700">Fotos hierher ziehen oder klicken zum Auswählen</p>
+        <p class="mt-1 text-sm text-stone-500">JPG, PNG, WEBP oder HEIC · max. 10 MB pro Bild</p>
+      </div>
+
+      <div id="previewGrid" class="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3"></div>
+
+      <div class="mt-6 flex flex-col items-center gap-3">
+        <button id="uploadBtn" type="button" disabled
+          class="w-full rounded-full bg-blush-500 px-8 py-3 font-medium text-white shadow-md transition-colors hover:bg-blush-600 disabled:cursor-not-allowed disabled:bg-stone-300 sm:w-auto">
+          Hochladen
+        </button>
+        <ul id="statusList" class="w-full space-y-1 text-sm"></ul>
+      </div>
+    </div>
+  </section>
+
+  <footer class="px-6 py-10 text-center text-sm text-stone-400">
+    Mit Liebe gemacht für unseren schönsten Tag.
+  </footer>
+
+  <script>
+    var MAX_FILE_SIZE_MB = 10;
+    var ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+
+    var dropzone = document.getElementById('dropzone');
+    var fileInput = document.getElementById('fileInput');
+    var previewGrid = document.getElementById('previewGrid');
+    var uploadBtn = document.getElementById('uploadBtn');
+    var statusList = document.getElementById('statusList');
+
+    var selectedFiles = [];
+
+    dropzone.addEventListener('click', function () { fileInput.click(); });
+    dropzone.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      dropzone.classList.add('border-blush-500', 'bg-blush-100');
+    });
+    dropzone.addEventListener('dragleave', function () {
+      dropzone.classList.remove('border-blush-500', 'bg-blush-100');
+    });
+    dropzone.addEventListener('drop', function (e) {
+      e.preventDefault();
+      dropzone.classList.remove('border-blush-500', 'bg-blush-100');
+      addFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', function (e) { addFiles(e.target.files); });
+
+    function addFiles(fileList) {
+      statusList.innerHTML = '';
+      var existingKeys = {};
+      selectedFiles.forEach(function (f) { existingKeys[f.name + '-' + f.size] = true; });
+
+      Array.prototype.forEach.call(fileList, function (file) {
+        if (ACCEPTED_TYPES.indexOf(file.type) === -1) return;
+        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) return;
+        var key = file.name + '-' + file.size;
+        if (existingKeys[key]) return;
+        existingKeys[key] = true;
+        selectedFiles.push(file);
+      });
+
+      renderPreviews();
+    }
+
+    function renderPreviews() {
+      previewGrid.innerHTML = '';
+      selectedFiles.forEach(function (file, index) {
+        var url = URL.createObjectURL(file);
+        var cell = document.createElement('div');
+        cell.className = 'group relative aspect-square overflow-hidden rounded-xl border border-blush-200 bg-white shadow-sm';
+        cell.innerHTML =
+          '<img src="' + url + '" class="h-full w-full object-cover" alt="">' +
+          '<button type="button" data-index="' + index + '" ' +
+          'class="remove-btn absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">✕</button>';
+        previewGrid.appendChild(cell);
+      });
+
+      Array.prototype.forEach.call(previewGrid.querySelectorAll('.remove-btn'), function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          selectedFiles.splice(Number(btn.dataset.index), 1);
+          renderPreviews();
+        });
+      });
+
+      uploadBtn.disabled = selectedFiles.length === 0;
+      uploadBtn.textContent = 'Hochladen' + (selectedFiles.length ? ' (' + selectedFiles.length + ')' : '');
+    }
+
+    function fileToBase64(file) {
+      return new Promise(function (resolve, reject) {
+        var reader = new FileReader();
+        reader.onload = function () { resolve(reader.result.split(',')[1]); };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function uploadOne(file) {
+      return fileToBase64(file).then(function (base64) {
+        return new Promise(function (resolve, reject) {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .uploadFile(base64, file.name, file.type);
+        });
+      });
+    }
+
+    async function uploadAll() {
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = 'Wird hochgeladen …';
+      statusList.innerHTML = '';
+
+      var remaining = [];
+
+      for (var i = 0; i < selectedFiles.length; i++) {
+        var file = selectedFiles[i];
+        var li = document.createElement('li');
+        li.className = 'text-stone-500';
+        li.textContent = file.name + ' wird hochgeladen …';
+        statusList.appendChild(li);
+
+        try {
+          await uploadOne(file);
+          li.className = 'text-sage-600';
+          li.textContent = '✓ ' + file.name + ' erfolgreich hochgeladen';
+        } catch (err) {
+          li.className = 'text-red-600';
+          li.textContent = '✗ ' + file.name + ': ' + (err && err.message ? err.message : 'Fehler beim Hochladen');
+          remaining.push(file);
+        }
+      }
+
+      selectedFiles = remaining;
+      renderPreviews();
+    }
+
+    uploadBtn.addEventListener('click', uploadAll);
+  </script>
+</body>
+</html>

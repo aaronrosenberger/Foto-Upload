@@ -1,20 +1,9 @@
-# dependencies
+# clasp (contains your real Apps Script project ID)
+.clasp.json
+.clasprc.json
+
+# dependencies (only relevant if clasp is installed locally)
 node_modules/
-
-# next.js
-.next/
-out/
-build/
-
-# env
-.env
-.env*.local
 
 # misc
 .DS_Store
-*.pem
-npm-debug.log*
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts

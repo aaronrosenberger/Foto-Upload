@@ -1,94 +1,113 @@
-# Foto-Upload – Hochzeits-Landingpage
+# Foto-Upload – Hochzeits-Landingpage (Google Apps Script)
 
-Eine Next.js-Landingpage für eine Hochzeit mit Foto-Upload-Funktion. Gäste können
-Bilder auswählen und per Klick auf "Hochladen" direkt in einen Google-Drive-Ordner
-hochladen – die Anbindung erfolgt über einen Google Service Account.
+Eine Hochzeits-Landingpage mit Foto-Upload-Funktion, gebaut als **Google Apps
+Script Web App**. Gäste wählen Bilder aus und laden sie per Klick auf
+"Hochladen" direkt in einen Google-Drive-Ordner hoch – ganz ohne separates
+Hosting, da Apps Script die Seite selbst ausliefert.
 
 ## Tech-Stack
 
-- [Next.js](https://nextjs.org/) (App Router, TypeScript)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [googleapis](https://www.npmjs.com/package/googleapis) für die Google-Drive-API
-
-## Einrichtung
-
-### 1. Abhängigkeiten installieren
-
-```bash
-npm install
-```
-
-### 2. Google Service Account einrichten
-
-1. Google Cloud Projekt öffnen (oder neues anlegen): https://console.cloud.google.com/
-2. **Google Drive API** aktivieren (APIs & Dienste → Bibliothek → "Google Drive API").
-3. Unter **APIs & Dienste → Anmeldedaten** einen neuen **Dienstkonto** (Service Account)
-   anlegen.
-4. Für das Dienstkonto einen JSON-Schlüssel erstellen und herunterladen. Aus der
-   JSON-Datei benötigst du:
-   - `client_email` → `GOOGLE_SERVICE_ACCOUNT_EMAIL`
-   - `private_key` → `GOOGLE_PRIVATE_KEY`
-5. Den Ziel-Ordner in Google Drive anlegen und die **E-Mail-Adresse des
-   Service Accounts** als Bearbeiter für diesen Ordner freigeben (Ordner
-   → Rechtsklick → "Freigeben"). Ohne diesen Schritt schlägt der Upload mit
-   einem Berechtigungsfehler fehl.
-6. Die Ordner-ID aus der URL des Ordners kopieren:
-   `https://drive.google.com/drive/folders/<ORDNER_ID>` → `GOOGLE_DRIVE_FOLDER_ID`
-
-### 3. Umgebungsvariablen setzen
-
-`.env.example` nach `.env.local` kopieren und die Werte eintragen:
-
-```bash
-cp .env.example .env.local
-```
-
-```env
-GOOGLE_SERVICE_ACCOUNT_EMAIL=service-account@dein-projekt.iam.gserviceaccount.com
-GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-GOOGLE_DRIVE_FOLDER_ID=deine-google-drive-ordner-id
-```
-
-> Wichtig: Der `GOOGLE_PRIVATE_KEY` muss die Zeilenumbrüche als `\n` enthalten
-> und in Anführungszeichen stehen, genau wie in der JSON-Datei.
-
-### 4. Entwicklungsserver starten
-
-```bash
-npm run dev
-```
-
-Die Seite ist danach unter http://localhost:3000 erreichbar.
+- [Google Apps Script](https://developers.google.com/apps-script) (V8-Runtime)
+- `HtmlService` für die Seite (`Index.html`)
+- [Tailwind CSS](https://tailwindcss.com/) über CDN (kein Build-Schritt nötig)
+- `DriveApp` für den Datei-Upload – läuft unter deinem eigenen Google-Konto,
+  **kein Service Account / keine JSON-Schlüssel nötig**
 
 ## Projektstruktur
 
 ```
-src/
-  app/
-    page.tsx            Landingpage (Hero, Hochzeitsinfos, Upload-Bereich)
-    layout.tsx           Root-Layout, Metadaten
-    globals.css           Tailwind-Basis-Styles
-    api/upload/route.ts   API-Route für den Foto-Upload
-  components/
-    PhotoUploader.tsx     Client-Komponente: Auswahl, Vorschau, Upload
-  lib/
-    googleDrive.ts        Google-Drive-Anbindung über Service Account
+appsscript.json    Manifest (Web-App-Konfiguration)
+Code.gs            Server-Logik: liefert die Seite aus, nimmt Uploads entgegen
+Index.html         Landingpage inkl. Upload-Widget (HTML/CSS/JS)
+.clasp.json.example Vorlage für die clasp-Konfiguration (lokal → Apps Script)
 ```
+
+## Einrichtung
+
+### 1. Voraussetzungen
+
+- Ein Google-Konto, unter dem die App laufen soll (dieses Konto braucht
+  Zugriff auf den Ziel-Drive-Ordner).
+- [clasp](https://github.com/google/clasp) für die lokale Entwicklung:
+  ```bash
+  npm install -g @google/clasp
+  clasp login
+  ```
+
+### 2. Apps-Script-Projekt anlegen und Code hochladen
+
+```bash
+clasp create --type webapp --title "Foto-Upload Hochzeit" --rootDir .
+```
+
+Das legt automatisch eine `.clasp.json` mit deiner eigenen `scriptId` an
+(diese Datei ist bewusst in `.gitignore`, da sie projektspezifisch ist –
+orientiere dich an `.clasp.json.example`).
+
+Danach den Code hochladen:
+
+```bash
+clasp push
+```
+
+Alternativ ganz ohne clasp: Auf https://script.google.com ein neues Projekt
+anlegen und den Inhalt von `Code.gs`, `Index.html` und `appsscript.json`
+manuell in den Editor kopieren (Projekteinstellungen → "appsscript.json-
+Manifestdatei anzeigen" aktivieren, um die Manifest-Datei bearbeiten zu
+können).
+
+### 3. Google-Drive-Ordner verknüpfen
+
+1. In Google Drive (mit dem Konto, unter dem die App später läuft) den
+   Zielordner für die Hochzeitsfotos anlegen oder auswählen.
+2. Die Ordner-ID aus der URL kopieren:
+   `https://drive.google.com/drive/folders/`**`<ORDNER_ID>`**
+3. Im Apps-Script-Editor: **Projekteinstellungen (Zahnrad-Symbol) → Script
+   Properties → Script-Property hinzufügen**
+   - Eigenschaft: `DRIVE_FOLDER_ID`
+   - Wert: die kopierte Ordner-ID
+4. Speichern.
+
+Das war's – kein Service Account, keine Freigabe-Schritte nötig, da das
+Script direkt mit den Rechten deines Google-Kontos läuft.
+
+### 4. Als Web App bereitstellen
+
+```bash
+clasp deploy
+```
+
+Oder im Editor: **Deploy → Neuer Deployment → Web-App**
+- **Ausführen als:** Ich (dein Konto)
+- **Zugriff:** Jeder / Jeder (auch anonym) – damit Gäste ohne Google-Login
+  hochladen können
+
+Nach dem Deployment erhältst du eine URL wie
+`https://script.google.com/macros/s/XXXXXXXX/exec` – das ist die fertige,
+gehostete Landingpage.
+
+> Nach Code-Änderungen: `clasp push` und danach ein **neues Deployment**
+> (bzw. bestehendes Deployment aktualisieren), damit die Web-App-URL die
+> neue Version ausliefert.
 
 ## Funktionsweise des Uploads
 
-1. Im Browser wählt der Nutzer ein oder mehrere Bilder aus (Drag & Drop oder
-   Dateiauswahl).
-2. Beim Klick auf "Hochladen" werden die Dateien als `multipart/form-data`
-   an `POST /api/upload` gesendet.
-3. Die API-Route validiert Dateityp (JPG/PNG/WEBP/HEIC) und Größe (max. 15 MB),
-   authentifiziert sich über den Service Account (JWT) und lädt jede Datei per
-   `drive.files.create` in den konfigurierten Ordner hoch.
-4. Der Client zeigt pro Datei den Status (Erfolg/Fehler) an.
+1. Im Browser wählt der Gast ein oder mehrere Bilder aus (Drag & Drop oder
+   Dateiauswahl); JPG/PNG/WEBP/HEIC, max. 10 MB pro Bild.
+2. Beim Klick auf "Hochladen" wird jede Datei client-seitig als Base64
+   kodiert und nacheinander per `google.script.run` an die Server-Funktion
+   `uploadFile()` in `Code.gs` übergeben.
+3. `uploadFile()` validiert Typ und Größe, dekodiert die Datei und legt sie
+   über `DriveApp.getFolderById(...).createFile(...)` im konfigurierten
+   Ordner ab.
+4. Die Seite zeigt pro Datei den Status (Erfolg/Fehler) an.
 
-## Build für Produktion
+## Hinweise zu Limits
 
-```bash
-npm run build
-npm run start
-```
+- Apps Script hat eine Ausführungszeit-Grenze von 6 Minuten pro Aufruf,
+  daher werden Dateien nacheinander (nicht parallel) hochgeladen.
+- Die Dateigröße ist bewusst auf 10 MB begrenzt (anpassbar in
+  `MAX_FILE_SIZE_BYTES` in `Code.gs` und `MAX_FILE_SIZE_MB` in `Index.html`),
+  um innerhalb der Apps-Script-Quotas zu bleiben.
+- Bei sehr vielen gleichzeitigen Uploads (z. B. viele Gäste zeitgleich)
+  gelten die täglichen Apps-Script-Kontingente für private Google-Konten.
