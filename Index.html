@@ -28,42 +28,53 @@
 </head>
 <body class="min-h-screen text-stone-800">
   <main class="mx-auto flex min-h-screen w-full max-w-2xl flex-col justify-center px-4 py-10 sm:px-6 sm:py-16">
-    <header class="text-center">
-      <svg width="72" height="72" viewBox="0 0 100 100" class="mx-auto" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <path id="petal-leaf" d="M50 50 C 43 42, 34 26, 24 4 C 44 10, 56 26, 60 40 C 60 44, 55 48, 50 50 Z"/>
-          <path id="petal-outer" d="M50 50 C 27 47, 15 30, 22 12 C 34 4, 48 4, 50 16 C 52 4, 66 4, 78 12 C 85 30, 73 47, 50 50 Z"/>
-          <path id="petal-inner" d="M50 50 C 36 47, 29 36, 33 24 C 41 18, 48 20, 50 28 C 52 20, 59 18, 67 24 C 71 36, 64 47, 50 50 Z"/>
-        </defs>
-        <g fill="#697f5b">
-          <use href="#petal-leaf" transform="rotate(36 50 50)"/>
-          <use href="#petal-leaf" transform="rotate(180 50 50) scale(0.9)"/>
-          <use href="#petal-leaf" transform="rotate(252 50 50) scale(0.85)"/>
-        </g>
-        <g fill="#fbf8f2" stroke="#8a7c5c" stroke-width="1">
-          <use href="#petal-outer" transform="rotate(0 50 50)"/>
-          <use href="#petal-outer" transform="rotate(72 50 50)"/>
-          <use href="#petal-outer" transform="rotate(144 50 50)"/>
-          <use href="#petal-outer" transform="rotate(216 50 50)"/>
-          <use href="#petal-outer" transform="rotate(288 50 50)"/>
-        </g>
-        <g fill="#e3d383" stroke="#c9b968" stroke-width="0.5">
-          <use href="#petal-inner" transform="rotate(36 50 50)"/>
-          <use href="#petal-inner" transform="rotate(108 50 50)"/>
-          <use href="#petal-inner" transform="rotate(180 50 50)"/>
-          <use href="#petal-inner" transform="rotate(252 50 50)"/>
-          <use href="#petal-inner" transform="rotate(324 50 50)"/>
-        </g>
-        <circle cx="50" cy="50" r="7" fill="#e8c94a"/>
-        <g fill="#c9a227">
-          <circle cx="47" cy="47" r="0.8"/>
-          <circle cx="53" cy="47" r="0.8"/>
-          <circle cx="47" cy="53" r="0.8"/>
-          <circle cx="53" cy="53" r="0.8"/>
-          <circle cx="50" cy="50" r="0.8"/>
-        </g>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="rose-emblem" viewBox="0 0 100 100">
+          <defs>
+            <path id="petal-leaf" d="M50 50 C 43 42, 34 26, 24 4 C 44 10, 56 26, 60 40 C 60 44, 55 48, 50 50 Z"/>
+            <path id="petal-outer" d="M50 50 C 27 47, 15 30, 22 12 C 34 4, 48 4, 50 16 C 52 4, 66 4, 78 12 C 85 30, 73 47, 50 50 Z"/>
+            <path id="petal-inner" d="M50 50 C 36 47, 29 36, 33 24 C 41 18, 48 20, 50 28 C 52 20, 59 18, 67 24 C 71 36, 64 47, 50 50 Z"/>
+          </defs>
+          <g fill="#697f5b">
+            <use href="#petal-leaf" transform="rotate(36 50 50)"/>
+            <use href="#petal-leaf" transform="rotate(180 50 50) scale(0.9)"/>
+            <use href="#petal-leaf" transform="rotate(252 50 50) scale(0.85)"/>
+          </g>
+          <g fill="#fbf8f2" stroke="#8a7c5c" stroke-width="1">
+            <use href="#petal-outer" transform="rotate(0 50 50)"/>
+            <use href="#petal-outer" transform="rotate(72 50 50)"/>
+            <use href="#petal-outer" transform="rotate(144 50 50)"/>
+            <use href="#petal-outer" transform="rotate(216 50 50)"/>
+            <use href="#petal-outer" transform="rotate(288 50 50)"/>
+          </g>
+          <g fill="#e3d383" stroke="#c9b968" stroke-width="0.5">
+            <use href="#petal-inner" transform="rotate(36 50 50)"/>
+            <use href="#petal-inner" transform="rotate(108 50 50)"/>
+            <use href="#petal-inner" transform="rotate(180 50 50)"/>
+            <use href="#petal-inner" transform="rotate(252 50 50)"/>
+            <use href="#petal-inner" transform="rotate(324 50 50)"/>
+          </g>
+          <circle cx="50" cy="50" r="7" fill="#e8c94a"/>
+          <g fill="#c9a227">
+            <circle cx="47" cy="47" r="0.8"/>
+            <circle cx="53" cy="47" r="0.8"/>
+            <circle cx="47" cy="53" r="0.8"/>
+            <circle cx="53" cy="53" r="0.8"/>
+            <circle cx="50" cy="50" r="0.8"/>
+          </g>
+        </symbol>
+      </defs>
+    </svg>
+
+    <header class="flex items-center justify-center gap-3 sm:gap-4">
+      <svg width="36" height="36" viewBox="0 0 100 100" class="shrink-0 sm:h-11 sm:w-11" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <use href="#rose-emblem"/>
       </svg>
-      <p class="mt-2 font-serif text-xl text-sage-700 sm:text-2xl">Lena <span class="text-sage-400">&amp;</span> Aaron</p>
+      <p class="font-serif text-xl text-sage-700 sm:text-2xl">Lena <span class="text-sage-400">&amp;</span> Aaron</p>
+      <svg width="36" height="36" viewBox="0 0 100 100" class="shrink-0 sm:h-11 sm:w-11" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <use href="#rose-emblem"/>
+      </svg>
     </header>
 
     <div class="mt-8 text-center">
