@@ -69,7 +69,7 @@
         <input id="fileInput" type="file"
           accept="image/*" multiple class="hidden">
         <p class="font-serif text-base text-sage-700 sm:text-lg">Antippen zum Auswählen</p>
-        <p class="mt-1 text-xs text-stone-500 sm:text-sm">Alle gängigen Foto-Formate (JPG, HEIC, PNG, WEBP, GIF, DNG …) · max. 50 MB pro Bild</p>
+        <p class="mt-1 text-xs text-stone-500 sm:text-sm">Alle gängigen Foto-Formate (JPG, HEIC, PNG, WEBP, GIF, DNG …) · max. 25 MB pro Bild</p>
       </div>
 
       <div id="previewGrid" class="mt-6 grid grid-cols-3 gap-2 sm:gap-3"></div>
@@ -161,11 +161,7 @@
   </main>
 
   <script>
-    // Filled in by Code.gs (doGet) via an Apps Script template scriptlet, so
-    // the page always POSTs to its own current deployment URL.
-    var SCRIPT_URL = "<?!= scriptUrl ?>";
-
-    var MAX_FILE_SIZE_MB = 50;
+    var MAX_FILE_SIZE_MB = 25;
     // Covers standard formats plus the Apple (HEIC/HEIF, incl. Live Photo
     // "sequence" variants) and Android (JPG mislabelled as image/jpg on some
     // older devices) formats guests are likely to share photos in.
@@ -188,12 +184,7 @@
     };
     var UPLOAD_TIMEOUT_MS = 60000;
     var UPLOAD_MAX_RETRIES = 2;
-    // Sequential on purpose: concurrent raw-binary POSTs to the same Apps
-    // Script deployment's doPost have been observed to intermittently arrive
-    // with an empty body ("Keine Daten empfangen") - likely Apps Script's
-    // infrastructure not handling truly simultaneous binary uploads to one
-    // web app well. One at a time is slower but reliable.
-    var UPLOAD_CONCURRENCY = 1;
+    var UPLOAD_CONCURRENCY = 3;
 
     // Resolves the effective MIME type for a File, falling back to the file
     // extension when the browser didn't supply (or misreported) file.type.
@@ -315,49 +306,37 @@
       updateUploadButton();
     }
 
-    // Uploads the raw file bytes directly via XHR POST to this web app's own
-    // URL (doPost in Code.gs) instead of base64-encoding through
-    // google.script.run - avoids the ~33% base64 size overhead.
-    //
-    // Note: this deliberately does NOT attach an xhr.upload.onprogress
-    // listener. Per the CORS spec, registering any listener on
-    // XMLHttpRequestUpload forces the browser to send a preflight OPTIONS
-    // request, and Apps Script web apps have no way to answer that (no
-    // doOptions hook) - every upload would fail with a generic network
-    // error. Real byte-level progress isn't available here as a result; the
-    // striped progress bar + per-row spinners are what make progress feel
-    // alive instead.
-    function uploadOne(file) {
+    function fileToBase64(file) {
       return new Promise(function (resolve, reject) {
-        var mimeType = file.resolvedType || file.type;
-        var url = SCRIPT_URL
-          + '?fileName=' + encodeURIComponent(file.name)
-          + '&mimeType=' + encodeURIComponent(mimeType);
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', url, true);
-        xhr.timeout = UPLOAD_TIMEOUT_MS;
-        // Also keeps this a CORS "simple request" (one less reason to need
-        // a preflight Apps Script can't answer) - the real image MIME type
-        // is passed separately via the mimeType query parameter above, so
-        // the raw bytes sent here don't depend on this header at all.
-        xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-
-        xhr.onload = function () {
-          var data = null;
-          try { data = JSON.parse(xhr.responseText); } catch (parseErr) { /* fall through */ }
-
-          if (xhr.status >= 200 && xhr.status < 300 && data && !data.error) {
-            resolve(data);
-          } else {
-            reject(new Error((data && data.error) || ('Serverfehler (HTTP ' + xhr.status + ')')));
-          }
-        };
-        xhr.onerror = function () { reject(new Error('Netzwerkfehler.')); };
-        xhr.ontimeout = function () { reject(new Error('Zeitüberschreitung – bitte erneut versuchen.')); };
-
-        xhr.send(file);
+        var reader = new FileReader();
+        reader.onload = function () { resolve(reader.result.split(',')[1]); };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
       });
+    }
+
+    function withTimeout(promise, ms) {
+      return new Promise(function (resolve, reject) {
+        var timer = setTimeout(function () {
+          reject(new Error('Zeitüberschreitung – bitte erneut versuchen.'));
+        }, ms);
+        promise.then(
+          function (value) { clearTimeout(timer); resolve(value); },
+          function (error) { clearTimeout(timer); reject(error); }
+        );
+      });
+    }
+
+    function uploadOne(file) {
+      var call = fileToBase64(file).then(function (base64) {
+        return new Promise(function (resolve, reject) {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .uploadFile(base64, file.name, file.resolvedType || file.type);
+        });
+      });
+      return withTimeout(call, UPLOAD_TIMEOUT_MS);
     }
 
     function delay(ms) {
@@ -377,8 +356,8 @@
       });
     }
 
-    // Apps Script gives us no real byte-level transfer progress here - this
-    // tracks how many of the selected photos have finished (success or
+    // Apps Script's google.script.run has no byte-level transfer progress -
+    // this tracks how many of the selected photos have finished (success or
     // error) so far, which is the most accurate progress we can show.
     function updateProgress(done, total) {
       var percent = total > 0 ? Math.round((done / total) * 100) : 0;
