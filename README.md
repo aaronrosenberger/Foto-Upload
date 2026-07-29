@@ -104,10 +104,12 @@ gehostete Landingpage.
    einen Preflight für nötig hält (was ein Progress-Listener laut CORS-Spec
    immer auslöst, unabhängig vom Content-Type), schlägt der Upload mit einem
    Netzwerkfehler fehl. Echter Byte-für-Byte-Fortschritt ist dadurch leider
-   nicht möglich. Bis zu 3 Dateien laufen dabei gleichzeitig
-   (`UPLOAD_CONCURRENCY` in `Index.html`); schlägt ein Upload fehl, wird er
-   automatisch bis zu zweimal wiederholt (`UPLOAD_MAX_RETRIES`), bevor er als
-   fehlgeschlagen markiert wird.
+   nicht möglich. Dateien werden bewusst **nacheinander** hochgeladen
+   (`UPLOAD_CONCURRENCY = 1` in `Index.html`) – gleichzeitige Binär-POSTs an
+   denselben `doPost`-Endpunkt kamen bei Tests gelegentlich mit leerem Body
+   ("Keine Daten empfangen") beim Server an. Schlägt ein Upload trotzdem fehl,
+   wird er automatisch bis zu zweimal wiederholt (`UPLOAD_MAX_RETRIES`), bevor
+   er als fehlgeschlagen markiert wird.
 3. `doPost(e)` in `Code.gs` validiert Typ und Größe, liest die rohen Bytes
    aus `e.postData.bytes` und legt die Datei über
    `DriveApp.getFolderById(...).createFile(...)` im konfigurierten Ordner ab.
@@ -123,9 +125,8 @@ ausgeliefert wird (z. B. nicht bei einem lokalen Öffnen der Datei).
 
 ## Hinweise zu Limits
 
-- Apps Script hat eine Ausführungszeit-Grenze von 6 Minuten pro Aufruf; die
-  Parallelität ist bewusst auf 3 gleichzeitige Uploads begrenzt, um innerhalb
-  der Kontingente für gleichzeitige Ausführungen zu bleiben.
+- Apps Script hat eine Ausführungszeit-Grenze von 6 Minuten pro Aufruf.
+  Uploads laufen bewusst nacheinander statt parallel (siehe oben).
 - Die Dateigröße ist auf 50 MB begrenzt (anpassbar in
   `MAX_FILE_SIZE_BYTES` in `Code.gs` und `MAX_FILE_SIZE_MB` in `Index.html`),
   um innerhalb der Apps-Script-Quotas zu bleiben. Abgelehnte Dateien (falscher

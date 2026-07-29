@@ -188,7 +188,12 @@
     };
     var UPLOAD_TIMEOUT_MS = 60000;
     var UPLOAD_MAX_RETRIES = 2;
-    var UPLOAD_CONCURRENCY = 3;
+    // Sequential on purpose: concurrent raw-binary POSTs to the same Apps
+    // Script deployment's doPost have been observed to intermittently arrive
+    // with an empty body ("Keine Daten empfangen") - likely Apps Script's
+    // infrastructure not handling truly simultaneous binary uploads to one
+    // web app well. One at a time is slower but reliable.
+    var UPLOAD_CONCURRENCY = 1;
 
     // Resolves the effective MIME type for a File, falling back to the file
     // extension when the browser didn't supply (or misreported) file.type.
