@@ -14,35 +14,59 @@ var ALLOWED_MIME_TYPES = [
 var MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
 function doGet() {
-  return HtmlService.createTemplateFromFile('Index')
-    .evaluate()
+  var template = HtmlService.createTemplateFromFile('Index');
+  template.scriptUrl = ScriptApp.getService().getUrl();
+  return template.evaluate()
     .setTitle('Foto Upload')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
 /**
- * Uploads a single base64-encoded image into the Drive folder configured
- * via the DRIVE_FOLDER_ID script property. Called from Index.html through
- * google.script.run, once per selected file.
+ * Receives a single photo as a raw binary POST body (sent via XHR from
+ * Index.html, not through google.script.run), with the file name and MIME
+ * type passed as query parameters. Sending the raw bytes directly - instead
+ * of a base64 string through google.script.run - avoids the ~33% size
+ * overhead of base64 and lets the client report real upload progress.
  */
-function uploadFile(base64Data, fileName, mimeType) {
+function doPost(e) {
+  var fileName = e.parameter.fileName;
+  var mimeType = e.parameter.mimeType;
+
+  if (!fileName || !mimeType) {
+    return jsonError('Fehlende Parameter.');
+  }
   if (ALLOWED_MIME_TYPES.indexOf(mimeType) === -1) {
-    throw new Error('Nicht unterstütztes Dateiformat.');
+    return jsonError('Nicht unterstütztes Dateiformat.');
   }
 
-  var decoded = Utilities.base64Decode(base64Data);
-  if (decoded.length > MAX_FILE_SIZE_BYTES) {
-    throw new Error('Datei ist größer als ' + (MAX_FILE_SIZE_BYTES / (1024 * 1024)) + ' MB.');
+  var bytes = e.postData && e.postData.bytes;
+  if (!bytes || bytes.length === 0) {
+    return jsonError('Keine Daten empfangen.');
+  }
+  if (bytes.length > MAX_FILE_SIZE_BYTES) {
+    return jsonError('Datei ist größer als ' + (MAX_FILE_SIZE_BYTES / (1024 * 1024)) + ' MB.');
   }
 
   var folderId = PropertiesService.getScriptProperties().getProperty('DRIVE_FOLDER_ID');
   if (!folderId) {
-    throw new Error('DRIVE_FOLDER_ID ist nicht als Script Property gesetzt.');
+    return jsonError('DRIVE_FOLDER_ID ist nicht als Script Property gesetzt.');
   }
 
-  var blob = Utilities.newBlob(decoded, mimeType, fileName);
-  var folder = DriveApp.getFolderById(folderId);
-  var file = folder.createFile(blob);
+  try {
+    var blob = Utilities.newBlob(bytes, mimeType, fileName);
+    var folder = DriveApp.getFolderById(folderId);
+    var file = folder.createFile(blob);
+    return jsonOutput({ fileId: file.getId(), fileName: fileName });
+  } catch (err) {
+    return jsonError(err.message || 'Fehler beim Hochladen.');
+  }
+}
 
-  return { fileId: file.getId(), fileName: fileName };
+function jsonOutput(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function jsonError(message) {
+  return jsonOutput({ error: message });
 }

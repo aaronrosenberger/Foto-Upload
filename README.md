@@ -94,16 +94,27 @@ gehostete Landingpage.
 
 1. Im Browser wählt der Gast ein oder mehrere Bilder aus (Drag & Drop oder
    Dateiauswahl); alle gängigen Foto-Formate, max. 25 MB pro Bild.
-2. Beim Klick auf "Hochladen" wird jede Datei client-seitig als Base64
-   kodiert und per `google.script.run` an die Server-Funktion `uploadFile()`
-   in `Code.gs` übergeben. Bis zu 3 Dateien laufen dabei gleichzeitig
-   (`UPLOAD_CONCURRENCY` in `Index.html`); schlägt ein Upload fehl, wird er
-   automatisch bis zu zweimal wiederholt (`UPLOAD_MAX_RETRIES`), bevor er als
-   fehlgeschlagen markiert wird.
-3. `uploadFile()` validiert Typ und Größe, dekodiert die Datei und legt sie
-   über `DriveApp.getFolderById(...).createFile(...)` im konfigurierten
-   Ordner ab.
-4. Die Seite zeigt pro Datei den Status (Erfolg/Fehler) an.
+2. Beim Klick auf "Hochladen" schickt der Browser jede Datei per
+   `XMLHttpRequest` als **rohen Binär-POST** direkt an die eigene Web-App-URL
+   (Dateiname/MIME-Type als Query-Parameter) – **nicht** über
+   `google.script.run`. Das spart die ~33 % Größenaufschlag von Base64 und
+   liefert echten Byte-für-Byte-Upload-Fortschritt
+   (`xhr.upload.onprogress`), was über `google.script.run` gar nicht möglich
+   wäre. Bis zu 3 Dateien laufen dabei gleichzeitig (`UPLOAD_CONCURRENCY` in
+   `Index.html`); schlägt ein Upload fehl, wird er automatisch bis zu zweimal
+   wiederholt (`UPLOAD_MAX_RETRIES`), bevor er als fehlgeschlagen markiert
+   wird.
+3. `doPost(e)` in `Code.gs` validiert Typ und Größe, liest die rohen Bytes
+   aus `e.postData.bytes` und legt die Datei über
+   `DriveApp.getFolderById(...).createFile(...)` im konfigurierten Ordner ab.
+4. Die Seite zeigt pro Datei den Status (Erfolg/Fehler) sowie einen
+   Gesamt-Fortschrittsbalken (echte Prozentangabe über alle Dateien) an.
+
+`doGet()` übergibt die eigene Bereitstellungs-URL
+(`ScriptApp.getService().getUrl()`) per Template-Scriptlet
+(`<?!= scriptUrl ?>`) an `Index.html` – deshalb funktioniert `SCRIPT_URL` in
+`Index.html` nur, wenn die Seite tatsächlich über `doGet()` von Apps Script
+ausgeliefert wird (z. B. nicht bei einem lokalen Öffnen der Datei).
 
 ## Hinweise zu Limits
 
