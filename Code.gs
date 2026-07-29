@@ -11,7 +11,7 @@ var ALLOWED_MIME_TYPES = [
   'image/x-adobe-dng'
 ];
 
-var MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
+var MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
 
 function doGet() {
   var template = HtmlService.createTemplateFromFile('Index');

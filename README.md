@@ -93,7 +93,7 @@ gehostete Landingpage.
 ## Funktionsweise des Uploads
 
 1. Im Browser wählt der Gast ein oder mehrere Bilder aus (Drag & Drop oder
-   Dateiauswahl); alle gängigen Foto-Formate, max. 25 MB pro Bild.
+   Dateiauswahl); alle gängigen Foto-Formate, max. 50 MB pro Bild.
 2. Beim Klick auf "Hochladen" schickt der Browser jede Datei per
    `XMLHttpRequest` als **rohen Binär-POST** direkt an die eigene Web-App-URL
    (Dateiname/MIME-Type als Query-Parameter) – **nicht** über
@@ -121,7 +121,7 @@ ausgeliefert wird (z. B. nicht bei einem lokalen Öffnen der Datei).
 - Apps Script hat eine Ausführungszeit-Grenze von 6 Minuten pro Aufruf; die
   Parallelität ist bewusst auf 3 gleichzeitige Uploads begrenzt, um innerhalb
   der Kontingente für gleichzeitige Ausführungen zu bleiben.
-- Die Dateigröße ist auf 25 MB begrenzt (anpassbar in
+- Die Dateigröße ist auf 50 MB begrenzt (anpassbar in
   `MAX_FILE_SIZE_BYTES` in `Code.gs` und `MAX_FILE_SIZE_MB` in `Index.html`),
   um innerhalb der Apps-Script-Quotas zu bleiben. Abgelehnte Dateien (falscher
   Typ oder zu groß) werden dem Gast mit Begründung angezeigt statt

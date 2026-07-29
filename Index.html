@@ -69,7 +69,7 @@
         <input id="fileInput" type="file"
           accept="image/*" multiple class="hidden">
         <p class="font-serif text-base text-sage-700 sm:text-lg">Antippen zum Auswählen</p>
-        <p class="mt-1 text-xs text-stone-500 sm:text-sm">Alle gängigen Foto-Formate (JPG, HEIC, PNG, WEBP, GIF, DNG …) · max. 25 MB pro Bild</p>
+        <p class="mt-1 text-xs text-stone-500 sm:text-sm">Alle gängigen Foto-Formate (JPG, HEIC, PNG, WEBP, GIF, DNG …) · max. 50 MB pro Bild</p>
       </div>
 
       <div id="previewGrid" class="mt-6 grid grid-cols-3 gap-2 sm:gap-3"></div>
@@ -165,7 +165,7 @@
     // the page always POSTs to its own current deployment URL.
     var SCRIPT_URL = "<?!= scriptUrl ?>";
 
-    var MAX_FILE_SIZE_MB = 25;
+    var MAX_FILE_SIZE_MB = 50;
     // Covers standard formats plus the Apple (HEIC/HEIF, incl. Live Photo
     // "sequence" variants) and Android (JPG mislabelled as image/jpg on some
     // older devices) formats guests are likely to share photos in.
