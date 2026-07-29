@@ -1,0 +1,9 @@
+# clasp (contains your real Apps Script project ID)
+.clasp.json
+.clasprc.json
+
+# dependencies (only relevant if clasp is installed locally)
+node_modules/
+
+# misc
+.DS_Store
