@@ -93,7 +93,7 @@ gehostete Landingpage.
 ## Funktionsweise des Uploads
 
 1. Im Browser wählt der Gast ein oder mehrere Bilder aus (Drag & Drop oder
-   Dateiauswahl); JPG/PNG/WEBP/HEIC, max. 20 MB pro Bild.
+   Dateiauswahl); alle gängigen Foto-Formate, max. 25 MB pro Bild.
 2. Beim Klick auf "Hochladen" wird jede Datei client-seitig als Base64
    kodiert und nacheinander per `google.script.run` an die Server-Funktion
    `uploadFile()` in `Code.gs` übergeben.
@@ -106,7 +106,7 @@ gehostete Landingpage.
 
 - Apps Script hat eine Ausführungszeit-Grenze von 6 Minuten pro Aufruf,
   daher werden Dateien nacheinander (nicht parallel) hochgeladen.
-- Die Dateigröße ist auf 20 MB begrenzt (anpassbar in
+- Die Dateigröße ist auf 25 MB begrenzt (anpassbar in
   `MAX_FILE_SIZE_BYTES` in `Code.gs` und `MAX_FILE_SIZE_MB` in `Index.html`),
   um innerhalb der Apps-Script-Quotas zu bleiben. Abgelehnte Dateien (falscher
   Typ oder zu groß) werden dem Gast mit Begründung angezeigt statt

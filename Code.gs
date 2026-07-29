@@ -10,7 +10,7 @@ var ALLOWED_MIME_TYPES = [
   'image/heif-sequence'
 ];
 
-var MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
+var MAX_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25 MB
 
 function doGet() {
   return HtmlService.createTemplateFromFile('Index')
