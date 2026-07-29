@@ -1,9 +1,13 @@
 var ALLOWED_MIME_TYPES = [
   'image/jpeg',
+  'image/jpg',
   'image/png',
   'image/webp',
+  'image/gif',
   'image/heic',
-  'image/heif'
+  'image/heif',
+  'image/heic-sequence',
+  'image/heif-sequence'
 ];
 
 var MAX_FILE_SIZE_BYTES = 20 * 1024 * 1024; // 20 MB
